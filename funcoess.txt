@@ -1,0 +1,68 @@
+CREATE OR REPLACE FUNCTION armazenarQuantitativoTotalAnimais()
+RETURNS VOID AS $$
+BEGIN
+    -- Cria ou atualiza a tabela de resumo (substitua 'ResumoAnimais' pelo nome real da sua tabela)
+    CREATE TABLE IF NOT EXISTS ResumoAnimais (
+        id SERIAL PRIMARY KEY,
+        totalAnimais INT
+    );
+
+    -- Calcula o quantitativo total de animais
+    WITH TotalAnimaisCTE AS (
+        SELECT COUNT(*) AS totalAnimais
+        FROM Animal
+    )
+    
+    -- Armazena o quantitativo total na tabela de resumo
+    INSERT INTO ResumoAnimais (totalAnimais)
+    SELECT totalAnimais FROM TotalAnimaisCTE
+    ON CONFLICT (id) DO UPDATE
+    SET totalAnimais = EXCLUDED.totalAnimais;
+END;
+$$ LANGUAGE plpgsql;
+
+
+SELECT armazenarQuantitativoTotalAnimais();
+SELECT*FROM ResumoAnimais;
+
+CREATE OR REPLACE FUNCTION verificaCamposPreenchidosEmTodasTabelas()
+RETURNS TABLE (tabelaNome VARCHAR, statusVerificacao TEXT)
+AS $$
+DECLARE
+    todosCamposPreenchidos BOOLEAN;
+    colunaNome VARCHAR;
+    tabelaNomeCursor VARCHAR;
+BEGIN
+    -- Loop através de todas as tabelas no esquema "public"
+    FOR tabelaNomeCursor IN (SELECT table_name FROM information_schema.tables WHERE table_schema = 'public') LOOP
+        todosCamposPreenchidos := TRUE;
+
+        -- Loop através de todas as colunas da tabela atual
+        FOR colunaNome IN (SELECT column_name FROM information_schema.columns WHERE table_name = tabelaNomeCursor) LOOP
+            -- Verifica se há algum valor nulo na coluna
+            EXECUTE FORMAT('SELECT EXISTS (SELECT 1 FROM %I WHERE %I IS NULL)', tabelaNomeCursor, colunaNome) INTO todosCamposPreenchidos;
+
+            -- Se encontrar um valor nulo, interrompe o loop
+            IF NOT todosCamposPreenchidos THEN
+                EXIT;
+            END IF;
+        END LOOP;
+
+        -- Retorna o resultado para cada tabela
+        RETURN QUERY SELECT tabelaNomeCursor, 
+            CASE 
+                WHEN todosCamposPreenchidos THEN 'Todos os campos estão preenchidos.'
+                ELSE 'Existem campos com valores nulos.'
+            END;
+    END LOOP;
+END;
+$$
+LANGUAGE plpgsql;
+
+SELECT * FROM verificaCamposPreenchidosEmTodasTabelas();
+
+
+
+
+
+

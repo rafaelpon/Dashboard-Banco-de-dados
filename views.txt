@@ -1,0 +1,84 @@
+CREATE VIEW Animalgeral AS
+SELECT
+    A.ID AS animalID,
+    A.catalogNumber,
+    A.occurrenceStatus,
+    A.preparations,
+    A.typeStatus,
+    A.scientificName,
+    T.kingdom,
+    T.phylum,
+    T.class,
+    T.orderT,
+    T.family,
+    T.genus,
+    T.species,
+    L.higherGeography,
+    L.continent,
+    L.countryCode,
+    L.stateProvince,
+    L.county,
+    L.locality,
+    P.decimalLatitude,
+    P.decimalLongitude
+FROM
+    Animal A
+JOIN
+    Taxonomy T ON A.taxonID = T.taxonID
+JOIN
+    Localizacao L ON A.locationID = L.locationID
+LEFT JOIN
+    Posicao P ON L.locationID = P.locationID;
+
+SELECT a.id AS animalid,
+    a.catalognumber,
+    a.occurrencestatus,
+    a.preparations,
+    a.typestatus,
+    a.scientificname,
+    t.kingdom,
+    t.phylum,
+    t.class,
+    t.ordert,
+    t.family,
+    t.genus,
+    t.species,
+    l.highergeography,
+    l.continent,
+    l.countrycode,
+    l.stateprovince,
+    l.county,
+    l.locality,
+    p.decimallatitude,
+    p.decimallongitude
+   FROM animal a
+     JOIN taxonomy t ON a.taxonid = t.taxonid
+     JOIN localizacao l ON a.locationid = l.locationid
+     LEFT JOIN posicao p ON l.locationid = p.locationid;
+
+
+CREATE VIEW AnimaisPorEstado AS
+SELECT
+    l.stateprovince,
+    COUNT(*) AS quantidade_animais
+FROM
+    animal a
+JOIN
+    localizacao l ON a.locationid = l.locationid
+GROUP BY
+    l.stateprovince
+ORDER BY
+    quantidade_animais DESC;
+
+ 
+CREATE VIEW QuantidadeAnimais AS
+ SELECT animal.scientificname,
+    count(*) AS quantidade
+   FROM animal
+  GROUP BY animal.scientificname
+  ORDER BY (count(*)) DESC;
+
+SELECT * FROM Animalgeral;
+SELECT * FROM QuantidadeAnimais;
+SELECT * FROM AnimaisPorEstado;
+

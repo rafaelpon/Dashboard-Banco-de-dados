@@ -1,0 +1,83 @@
+CREATE TABLE AnimalLog (
+    logID SERIAL PRIMARY KEY,
+    action VARCHAR(10),
+    animalID BIGINT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE OR REPLACE FUNCTION animal_insert_trigger()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO AnimalLog (action, animalID) VALUES ('INSERT', NEW.ID);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER animal_insert
+AFTER INSERT
+ON Animal
+FOR EACH ROW
+EXECUTE FUNCTION animal_insert_trigger();
+
+CREATE OR REPLACE FUNCTION animal_update_trigger()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO AnimalLog (action, animalID) VALUES ('UPDATE', NEW.ID);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER animal_update
+AFTER UPDATE
+ON Animal
+FOR EACH ROW
+EXECUTE FUNCTION animal_update_trigger();
+
+CREATE OR REPLACE FUNCTION animal_delete_trigger()
+RETURNS TRIGGER AS $$
+BEGIN
+    INSERT INTO AnimalLog (action, animalID) VALUES ('DELETE', OLD.ID);
+    RETURN OLD;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER animal_delete
+AFTER DELETE
+ON Animal
+FOR EACH ROW
+EXECUTE FUNCTION animal_delete_trigger();
+
+----------------------------------------------------- Exemplo:
+INSERT INTO public.nivel(
+	id, level0gid, level0name, level1gid, level1name, level2gid, level2name)
+	VALUES 	
+(893,NULL,NULL,NULL,NULL,NULL,NULL);
+INSERT INTO public.taxonomy(
+	taxonid, taxonkey, kingdom, phylum, class, ordert, family, genus, genericname, specificepithet, infraspecificepithet, taxonrank, taxonomicstatus, datasetkey, publishingcountry, kingdomkey, phylumkey, classkey, orderkey, familykey, genuskey, specieskey, species, acceptedscientificname, verbatimscientificname)
+	VALUES 	
+(893	,	2308740	,	'Animalia'	,	'Annelida'	,	'Clitellata'	,	'Haplotaxida'	,	'Glossoscolecidae'	,	'Pontoscolex'	,	'Pontoscolex'	,	'NULL'	,	'NULL'	,	'GENUS'	,	'DOUBTFUL'	,	'9c48ee0b-404a-4c84-9af0-946eef39ddca'	,	'BR'	,	1	,	420	,	2550	,	4720	,	35670	,	23087400	,	NULL	,	'NULL'	,	'Pontoscolex'	,	'Pontoscolex Corethrurus'	);
+INSERT INTO public.event (
+    eventID, accessRights, license, institutionCode, collectionCode, basisOfRecord, catalogNumber, eventDate, eventRemarks, protocol, lastCrawled
+) VALUES 
+(893	,	'Creative Commons Attribution Non Commercial (CC-BY-NC) 4.0 License.'	,	'CC_BY_NC_4_0'	,	'MPEG'	,	'ANL',	'PRESERVED_SPECIMEN'	,	'MPEG.ANL 001101'	,	'2017-08-30 00:00'	,	NULL	,	'EML'	,	'2023-01-07 08:25'	);
+INSERT INTO public.localizacao(
+	locationid, highergeography, continent, countrycode, stateprovince, county, locality)
+	VALUES 
+(893	,	'Pará, Belém'		,	'NULL'	,	'BR'	,	'Pará'	,	'Belém'	,	'Mocambo'	);
+INSERT INTO public.animal(
+	id, codid, catalognumber, occurrencestatus, preparations, typestatus, scientificname, taxonid, acceptedtaxonkey, datasetkey, lastinterpreted, issue, hascoordinate, hasgeospatialissues, repatriated, iucnredlistcategory, eventid, locationid, rightsholder, recordedby, NivelID)
+	VALUES 
+(893	,	2365686427	,	'MPEG.ANL 001101'	,	'PRESENT'	,	'Etanol - 3'	,	NULL	,	'Pontoscolex'	,	1	,	23087400	,	'9c48ee0b-404a-4c84-9af0-946eef39ddca'	,	'2023-09-07 06:19'	,	'COORDINATE_ROUNDED,GEODETIC_DATUM_ASSUMED_WGS84,CONTINENT_COORDINATE_MISMATCH,PRESUMED_NEGATED_LONGITUDE,COLLECTION_MATCH_NONE,INSTITUTION_MATCH_FUZZY'	,	TRUE	,	TRUE	,	FALSE	,	NULL	,	1	,	1	,	'Museu Paraense Emílio Goeldi (MPEG)'	,	'Beckman, Ruana. Pena, José. Souza, Raíssa', 1	);
+INSERT INTO public.posicao(
+	posicaoid, decimallatitude, decimallongitude, locationid)
+	VALUES 
+(893,14406940,-48411250,1);
+
+
+UPDATE Animal
+SET catalogNumber = 'XYZ789'
+WHERE ID = 1;
+
+DELETE FROM Animal WHERE ID = 1;
+
+SELECT * FROM AnimalLog;
